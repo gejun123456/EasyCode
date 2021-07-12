@@ -9,3 +9,75 @@
 #* @vtlvariable name="tableInfo" type="com.sjhy.plugin.entity.TableInfo" *#
 #* @vtlvariable name="tableInfoList" type="java.util.List<com.sjhy.plugin.entity.TableInfo>" *#
 #* @vtlvariable name="generateService" type="com.sjhy.plugin.tool.ExtraCodeGenerateUtils" *#
+
+//快速生成gorm的对应的模版
+
+## 所有语言都可以弄成template
+
+##针对Mybatis 进行支持，主要用于生成xml文件
+#foreach($column in $tableInfo.fullColumn)
+    ##储存列类型
+    $tool.call($column.ext.put("sqlType", $column.obj.dataType))
+    ${column.ext.get("typeName")}
+
+"default value is:"${column.obj.getDefault()}
+
+    #set($theTypeName = $tool.getField($column.obj.dataType, "typeName"))
+
+
+    ##public final int size;
+    ##public final int scale;
+
+    ## noneed to typemapping
+
+    #if ($theTypeName == 'int')
+        $tool.call($column.ext.put("columnType", "int64"))
+    #elseif($theTypeName == 'datetime')
+        $tool.call($column.ext.put("columnType", "time.Time"))
+    #else
+        $tool.call($column.ext.put("columnType", "boolean"))
+    #end
+
+
+    ##   set columnType by sqlType.
+    $tool.call($column.ext.put("columnType", "int64"))
+    #if($tool.newHashSet("java.lang.String").contains($column.type))
+        #set($jdbcType="VARCHAR")
+    #elseif($tool.newHashSet("java.lang.Boolean", "boolean").contains($column.type))
+        #set($jdbcType="BOOLEAN")
+    #elseif($tool.newHashSet("java.lang.Byte", "byte").contains($column.type))
+        #set($jdbcType="BYTE")
+    #elseif($tool.newHashSet("java.lang.Integer", "int", "java.lang.Short", "short").contains($column.type))
+        #set($jdbcType="INTEGER")
+    #elseif($tool.newHashSet("java.lang.Long", "long").contains($column.type))
+        #set($jdbcType="INTEGER")
+    #elseif($tool.newHashSet("java.lang.Float", "float", "java.lang.Double", "double").contains($column.type))
+        #set($jdbcType="NUMERIC")
+    #elseif($tool.newHashSet("java.util.Date", "java.sql.Timestamp", "java.time.Instant", "java.time.LocalDateTime",
+        "java.time.OffsetDateTime", "	java.time.ZonedDateTime").contains($column.type))
+        #set($jdbcType="TIMESTAMP")
+    #elseif($tool.newHashSet("java.sql.Date", "java.time.LocalDate").contains($column.type))
+        #set($jdbcType="TIMESTAMP")
+    #else
+        ##其他类型
+        #set($jdbcType="VARCHAR")
+    #end
+    $tool.call($column.ext.put("jdbcType", $jdbcType))
+#end
+
+
+
+#if(!$tableInfo.pkColumn.isEmpty())
+    #set($pk = $tableInfo.pkColumn.get(0))
+#end
+type ${tableInfo.name.toUpperCase()} struct {
+#foreach($column in $tableInfo.fullColumn)
+    #if(${column.name.equals(${pk.name})})
+        ${column.name.substring(0).toUpperCase()}${column.name.substring(1,${column.name.length()})}
+        ## how to get the sqlType of the column. use typeName to do it.
+        ${column.name.toUpperCase()} ${column.ext.columnType} `gorm:"type:${column.ext.sqlType};column:${column.name};primary`
+    #else
+        ${column.name.toUpperCase()} ${column.ext.columnType} `gorm:"type:${column.ext.sqlType};column:${column.name}`
+    #end
+#end
+}

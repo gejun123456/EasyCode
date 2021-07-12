@@ -130,7 +130,7 @@ public class MainSetting implements Configurable, Configurable.Composite {
             if (token == null) {
                 return;
             }
-            String result = HttpUtils.get(String.format("/template?token=%s", token));
+            String result = HttpUtils.get(String.format("/getTemplate?token=%s", token));
             if (result == null) {
                 return;
             }
