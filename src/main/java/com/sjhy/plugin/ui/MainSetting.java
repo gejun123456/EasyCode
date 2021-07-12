@@ -153,7 +153,6 @@ public class MainSetting implements Configurable, Configurable.Composite {
                         return;
                     }
                     // 关闭并退出
-                    dialogWrapper.close(DialogWrapper.OK_EXIT_CODE);
                     switch (importWay) {
                         case ImOrExportWayConfirmPanel.WAY_TOKEN:
                             tokenImport(importValue);
@@ -164,6 +163,8 @@ public class MainSetting implements Configurable, Configurable.Composite {
                         default:
                             break;
                     }
+
+                    dialogWrapper.close(DialogWrapper.OK_EXIT_CODE);
                 }
             });
             dialogBuilder.show();
@@ -259,8 +260,11 @@ public class MainSetting implements Configurable, Configurable.Composite {
         if (StringUtils.isEmpty(way)) {
             Messages.showWarningDialog(project, String.format("请选择%s方式", action), MsgValue.TITLE_INFO);
             return true;
-        } else if (StringUtils.isEmpty(value)) {
+        } else if (way.equals(ImOrExportWayConfirmPanel.WAY_LOCAL)&&StringUtils.isEmpty(value)) {
             Messages.showWarningDialog(project, String.format("请填写%s", "Token".equals(way) ? "Token" : "本地路径"), MsgValue.TITLE_INFO);
+            return true;
+        } else if(way.equals(ImOrExportWayConfirmPanel.WAY_TOKEN)&&action.equals("导入")&& StringUtils.isEmpty(value)){
+            Messages.showWarningDialog(project, "请填写token", MsgValue.TITLE_INFO);
             return true;
         }
         return false;
