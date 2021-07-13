@@ -103,7 +103,7 @@ public class Settings implements PersistentStateComponent<Settings> {
         // 作者名称
         this.author = "makejava";
         // 同步服务器
-        this.syncHost = "http://www.shujuhaiyang.com/easyCode";
+        this.syncHost = "http://118.24.53.162/easyCode";
         // 当前各项分组名称
         this.currTemplateGroupName = DEFAULT_NAME;
         this.currTypeMapperGroupName = DEFAULT_NAME;
